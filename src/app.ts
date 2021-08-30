@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { APP_USE_LIMIT } from './index.constants';
 import userRoutes from './routes/user.routes';
+import paymentRoutes from './routes/payments.routes';
 
 config();
 
@@ -17,6 +18,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(APP_USE_LIMIT);
 app.use(userRoutes);
+app.use(paymentRoutes);
 app.use('/', (req: Request, res: Response) => {
   res.send('Welcome to HTS api');
 });

@@ -3,6 +3,7 @@ import {
   getAuthUser,
   loginUser,
   register,
+  createTracks,
 } from '../controllers/user.controller';
 import {
   isLoggedIn,
@@ -16,6 +17,7 @@ export const USER_ROUTES = {
   USER: '/user',
   REGISTER: '/register',
   LOGIN: '/login',
+  TRACKS: '/track',
 };
 
 const userRoutes = Router();
@@ -23,5 +25,6 @@ const userRoutes = Router();
 userRoutes.post(USER_ROUTES.REGISTER, validateUserInputData, register);
 userRoutes.post(USER_ROUTES.LOGIN, validateLoginInputData, loginUser);
 userRoutes.get(USER_ROUTES.USER, isLoggedIn, getAuthUser);
+userRoutes.get(USER_ROUTES.TRACKS, isLoggedIn, createTracks);
 
 export default userRoutes;

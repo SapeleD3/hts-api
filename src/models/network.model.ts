@@ -3,7 +3,6 @@ import { Document, model, Schema } from 'mongoose';
 export type NetworkUser = {
   userId: string;
   joinedAt: Date;
-  sortOrder: number;
 };
 export interface iNetworkDocument extends Document {
   networkID: string;
@@ -31,14 +30,9 @@ const networkSchema = new Schema({
   },
   networkChildren: [
     {
-      userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      userId: { type: Schema.Types.ObjectId, ref: 'User' },
       joinedAt: {
         type: Date,
-        default: new Date(),
-      },
-      sortOrder: {
-        type: Number,
-        required: true,
       },
     },
   ],

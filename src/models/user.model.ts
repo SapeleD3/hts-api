@@ -22,6 +22,8 @@ export interface iUserDocument extends Document {
   networks?: NetworkDetails[];
   password?: string;
   createdAt: Date;
+  userType: string;
+  activationLevel: number;
   amount: 0;
   membersCount: 0;
   activatedUser: boolean;
@@ -32,6 +34,11 @@ const userSchema = new Schema({
   phoneNumber: {
     type: String,
     required: true,
+  },
+  userType: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
   },
   email: {
     type: String,
@@ -44,6 +51,10 @@ const userSchema = new Schema({
   fullName: {
     type: String,
     required: true,
+  },
+  activationLevel: {
+    type: Number,
+    default: 0,
   },
   userName: {
     type: String,

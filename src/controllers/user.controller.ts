@@ -5,6 +5,8 @@ import { responseHandler } from '../index.constants';
 import { sign } from 'jsonwebtoken';
 import { User } from '../models/user.model';
 import logger from '../helpers/logging';
+import { Track } from '../models/track.model';
+import { Network } from '../models/network.model';
 
 const { INTERNAL_SERVER_ERROR, BAD_REQUEST, OK } = status;
 export const register = async (req: Request, res: Response) => {
@@ -50,10 +52,21 @@ export const register = async (req: Request, res: Response) => {
     if (referralLink) {
       logger.info('LINK', referralLink);
       //get owner of referral link
-      const linkOwner = await User.findOne({
+      const linkOwner: any = await User.findOne({
         'networks.networkLink': referralLink,
       });
-      const network = linkOwner?.networks?.filter((val) => val.networkLink);
+
+      if (!linkOwner) {
+        if (existingEmail) {
+          responseHandler(res, BAD_REQUEST, {
+            message: 'invalid referal link',
+            data: {},
+          });
+        }
+      }
+      const network = linkOwner?.networks?.filter(
+        (val: any) => val.networkLink
+      );
       if (network) {
         newUser = await User.create({
           email,
@@ -69,6 +82,21 @@ export const register = async (req: Request, res: Response) => {
           },
           networks: [],
         });
+        await User.updateOne(
+          { _id: linkOwner?._id },
+          { $set: { membersCount: linkOwner?.membersCount + 1 } }
+        );
+        await Network.updateOne(
+          { _id: network[0].networkID },
+          {
+            $push: {
+              networkChildren: {
+                userId: newUser._id,
+                joinedAt: new Date(),
+              },
+            },
+          }
+        );
       }
     } else {
       newUser = await User.create({
@@ -152,6 +180,42 @@ export const getAuthUser = async (req: any, res: Response) => {
       message: ReasonPhrases.OK,
       data: {
         userData,
+      },
+    });
+  } catch (e) {
+    logger.error(e);
+    responseHandler(res, INTERNAL_SERVER_ERROR, {
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      data: {},
+    });
+  }
+};
+
+export const createTracks = async (req: any, res: Response) => {
+  try {
+    const { _id } = req.user;
+    await Track.create([
+      {
+        trackName: 'standard',
+        entryAmount: 10000,
+        cycles: 3,
+      },
+      {
+        trackName: 'medium',
+        entryAmount: 50000,
+        cycles: 3,
+      },
+      {
+        trackName: 'premium',
+        entryAmount: 100000,
+        cycles: 1,
+      },
+    ]);
+    const tracks = await Track.findOne({ _id });
+    return responseHandler(res, OK, {
+      message: ReasonPhrases.OK,
+      data: {
+        tracks,
       },
     });
   } catch (e) {
