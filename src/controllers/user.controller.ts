@@ -51,9 +51,15 @@ export const register = async (req: Request, res: Response) => {
     //get referral details if it exists
     if (referralLink) {
       logger.info('LINK', referralLink);
+      const networkDetails: any = await Network.findOne({
+        networkLink: referralLink,
+      });
       //get owner of referral link
       const linkOwner: any = await User.findOne({
-        'networks.networkLink': referralLink,
+        $or: [
+          { sNetworks: networkDetails._id },
+          { pNetworks: networkDetails._id },
+        ],
       });
 
       if (!linkOwner) {
@@ -64,10 +70,7 @@ export const register = async (req: Request, res: Response) => {
           });
         }
       }
-      const network = linkOwner?.networks?.filter(
-        (val: any) => val.networkLink
-      );
-      if (network) {
+      if (networkDetails) {
         newUser = await User.create({
           email,
           password: hashedPassword,
@@ -77,17 +80,16 @@ export const register = async (req: Request, res: Response) => {
           referredBy: {
             user: linkOwner?._id,
             referredAt: new Date(),
-            track: network[0].trackType,
+            track: networkDetails.trackType,
             link: referralLink,
           },
-          networks: [],
         });
         await User.updateOne(
           { _id: linkOwner?._id },
           { $set: { membersCount: linkOwner?.membersCount + 1 } }
         );
         await Network.updateOne(
-          { _id: network[0].networkID },
+          { _id: networkDetails._id },
           {
             $push: {
               networkChildren: {
@@ -105,7 +107,6 @@ export const register = async (req: Request, res: Response) => {
         fullName,
         phoneNumber,
         userName,
-        networks: [],
       });
     }
     if (newUser) {
@@ -175,7 +176,9 @@ export const loginUser = async (req: Request, res: Response) => {
 export const getAuthUser = async (req: any, res: Response) => {
   try {
     const { _id } = req.user;
-    const userData = await User.findOne({ _id }).select('-password');
+    const userData = await User.findOne({ _id })
+      .populate('sNetworks')
+      .select('-password');
     return responseHandler(res, OK, {
       message: ReasonPhrases.OK,
       data: {
@@ -198,12 +201,12 @@ export const createTracks = async (req: any, res: Response) => {
       {
         trackName: 'standard',
         entryAmount: 10000,
-        cycles: 3,
+        cycles: 1,
       },
       {
         trackName: 'medium',
         entryAmount: 50000,
-        cycles: 3,
+        cycles: 1,
       },
       {
         trackName: 'premium',

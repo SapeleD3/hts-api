@@ -12,19 +12,19 @@ const { UNPROCESSABLE_ENTITY, BAD_GATEWAY, NOT_FOUND, UNAUTHORIZED } =
 export const UserInputValidationSchema = Joi.object({
   email: Joi.string().min(5).required().trim(),
   phoneNumber: Joi.string().min(5).required().trim(),
-  userName: Joi.string().min(5).required().trim(),
+  userName: Joi.string().min(2).required().trim(),
   fullName: Joi.string().min(5).required().trim(),
   referralLink: Joi.string().min(5).trim(),
   password: Joi.string().min(6).max(1024).required(),
 });
 
 export const LoginValidationSchema = Joi.object({
-  userName: Joi.string().min(5).required().trim(),
+  userName: Joi.string().min(2).required().trim(),
   password: Joi.string().min(6).max(1024).required(),
 });
 
 /**
- * validate the inputs served to login and register
+ * validate the inputs served to login and resgister
  * @param req express request
  * @param res express response
  * @param next express next function

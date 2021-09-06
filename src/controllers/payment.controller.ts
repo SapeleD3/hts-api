@@ -69,7 +69,7 @@ export const verifyPaymentController = async (req: any, res: Response) => {
       );
 
       //activate plan
-      const user: any = await User.findOne({ _id });
+      const user = await User.findOne({ _id });
       const pTrack = await Track.findOne({ entryAmount: 100000 });
       const sTrack = await Track.findOne({ entryAmount: 10000 });
 
@@ -83,20 +83,31 @@ export const verifyPaymentController = async (req: any, res: Response) => {
             networkChildren: [],
             track: pTrack?._id,
           });
-          const networks = [
-            ...user.networks,
-            {
-              networkID: network._id,
-              networkLink: network.networkLink,
-              trackType: pTrack?._id,
-            },
-          ];
           await User.updateOne(
             { _id },
             {
-              $set: { activationLevel: 2, lastActive: new Date(), networks },
+              $set: {
+                activationLevel: 2,
+                lastActive: new Date(),
+                pNetworks: network._id,
+              },
             }
           );
+          if (user?.referredBy?.link) {
+            await Network.findOneAndUpdate(
+              {
+                $and: [
+                  { networkLink: user?.referredBy?.link },
+                  { 'networkChildren.userId': user._id },
+                ],
+              },
+              {
+                $set: {
+                  'networkChildren.$.childNetwork': network._id,
+                },
+              }
+            );
+          }
         }
       } else {
         if (actualAmount === 10000) {
@@ -108,14 +119,6 @@ export const verifyPaymentController = async (req: any, res: Response) => {
             networkChildren: [],
             track: sTrack?._id,
           });
-          const networks = [
-            ...user.networks,
-            {
-              networkID: snetwork._id,
-              networkLink: snetwork.networkLink,
-              trackType: sTrack?._id,
-            },
-          ];
           await User.updateOne(
             { _id },
             {
@@ -123,10 +126,25 @@ export const verifyPaymentController = async (req: any, res: Response) => {
                 activationLevel: 1,
                 activatedUser: true,
                 lastActive: new Date(),
-                networks,
+                sNetworks: snetwork._id,
               },
             }
           );
+          if (user?.referredBy?.link) {
+            await Network.findOneAndUpdate(
+              {
+                $and: [
+                  { networkLink: user?.referredBy?.link },
+                  { 'networkChildren.userId': user._id },
+                ],
+              },
+              {
+                $set: {
+                  'networkChildren.$.childNetwork': snetwork._id,
+                },
+              }
+            );
+          }
         } else {
           // rejecting other network amounts
           return responseHandler(res, BAD_REQUEST, {
@@ -136,7 +154,6 @@ export const verifyPaymentController = async (req: any, res: Response) => {
           });
         }
       }
-
       //finish activating the plan
       return responseHandler(res, OK, {
         message: ReasonPhrases.OK,

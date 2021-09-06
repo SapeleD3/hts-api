@@ -19,7 +19,8 @@ export interface iUserDocument extends Document {
   fullName: string;
   userName: string;
   referredBy?: ReferralDetails;
-  networks?: NetworkDetails[];
+  sNetworks?: string;
+  pNetworks?: string;
   password?: string;
   createdAt: Date;
   userType: string;
@@ -77,21 +78,14 @@ const userSchema = new Schema({
       type: String,
     },
   },
-  networks: [
-    {
-      networkID: {
-        type: Schema.Types.ObjectId,
-        ref: 'Network',
-      },
-      networkLink: {
-        type: String,
-      },
-      trackType: {
-        type: Schema.Types.ObjectId,
-        ref: 'Track',
-      },
-    },
-  ],
+  sNetworks: {
+    type: Schema.Types.ObjectId,
+    ref: 'Network',
+  },
+  pNetworks: {
+    type: Schema.Types.ObjectId,
+    ref: 'Network',
+  },
   amount: {
     type: Number,
     default: 0,

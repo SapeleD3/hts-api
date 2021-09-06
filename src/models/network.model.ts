@@ -34,6 +34,10 @@ const networkSchema = new Schema({
       joinedAt: {
         type: Date,
       },
+      childNetwork: {
+        type: Schema.Types.ObjectId,
+        ref: 'Network',
+      },
     },
   ],
   track: {
