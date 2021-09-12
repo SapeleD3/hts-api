@@ -1,14 +1,17 @@
 import { Router } from 'express';
 import {
   getAuthAdmin,
+  getVideos,
   loginAdmin,
   registerAdmin,
+  storeVideos,
 } from '../controllers/admin.controller';
 import {
   getAuthUser,
   loginUser,
   register,
   createTracks,
+  getNetworkMembers,
 } from '../controllers/user.controller';
 import { AdminLoggedIn } from '../middlewares/admin.middleware';
 import {
@@ -27,6 +30,8 @@ export const USER_ROUTES = {
   ADMIN_REGISTER: '/admin/register',
   ADMIN_LOGIN: '/admin/login',
   ADMIN: '/admin',
+  NETWORK: '/network',
+  VIDEOS: '/videos',
 };
 
 const userRoutes = Router();
@@ -38,5 +43,8 @@ userRoutes.get(USER_ROUTES.TRACKS, isLoggedIn, createTracks);
 userRoutes.post(USER_ROUTES.ADMIN_REGISTER, registerAdmin);
 userRoutes.post(USER_ROUTES.ADMIN_LOGIN, loginAdmin);
 userRoutes.get(USER_ROUTES.ADMIN, AdminLoggedIn, getAuthAdmin);
+userRoutes.post(USER_ROUTES.VIDEOS, AdminLoggedIn, storeVideos);
+userRoutes.get(USER_ROUTES.NETWORK, isLoggedIn, getNetworkMembers);
+userRoutes.get(USER_ROUTES.VIDEOS, isLoggedIn, getVideos);
 
 export default userRoutes;

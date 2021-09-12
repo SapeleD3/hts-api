@@ -3,7 +3,7 @@ import status, { ReasonPhrases } from 'http-status-codes';
 import bcrypt from 'bcryptjs';
 import { responseHandler } from '../index.constants';
 import { sign } from 'jsonwebtoken';
-import { User } from '../models/user.model';
+import { iUserDocument, User } from '../models/user.model';
 import logger from '../helpers/logging';
 import { Track } from '../models/track.model';
 import { Network } from '../models/network.model';
@@ -219,6 +219,72 @@ export const createTracks = async (req: any, res: Response) => {
       message: ReasonPhrases.OK,
       data: {
         tracks,
+      },
+    });
+  } catch (e) {
+    logger.error(e);
+    responseHandler(res, INTERNAL_SERVER_ERROR, {
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      data: {},
+    });
+  }
+};
+
+type Child = {};
+
+export const getNetworkMembers = async (req: any, res: Response) => {
+  const { _id, sNetworks, userName } = req.user;
+  try {
+    const myStandardNetwork = await Network.findOne({
+      $and: [{ networkOwner: _id }, { _id: sNetworks }],
+    });
+    const myFirstChildren: iUserDocument[] = await User.find({
+      $and: [
+        { 'referredBy.link': myStandardNetwork?.networkLink },
+        { 'referredBy.user': _id },
+      ],
+    }).populate('sNetworks');
+    const MyFirstChildrensChildren = await Promise.all(
+      myFirstChildren.map(async (val: any) => {
+        const { _id: fcId, sNetworks: myNetwork } = val;
+        const myFirstChildren = await User.find({
+          $and: [
+            { 'referredBy.link': myNetwork?.networkLink },
+            { 'referredBy.user': fcId },
+          ],
+        });
+        const children = await Promise.all(
+          myFirstChildren.map(async (val2: any) => {
+            const { _id: fcId2, sNetworks: myNetwork2 } = val2;
+            const myLastChildren = await User.find({
+              $and: [
+                { 'referredBy.link': myNetwork2?.networkLink },
+                { 'referredBy.user': fcId2 },
+              ],
+            });
+            return {
+              ...val2._doc,
+              name: val2._doc.userName,
+              children: myLastChildren,
+            };
+          })
+        );
+
+        return {
+          ...val._doc,
+          name: val._doc.userName,
+          children,
+        };
+      })
+    );
+    return responseHandler(res, OK, {
+      message: ReasonPhrases.OK,
+      data: {
+        length: MyFirstChildrensChildren.length,
+        Network: {
+          name: userName,
+          children: MyFirstChildrensChildren,
+        },
       },
     });
   } catch (e) {

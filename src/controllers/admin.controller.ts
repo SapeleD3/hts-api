@@ -5,6 +5,7 @@ import { sign } from 'jsonwebtoken';
 import status, { ReasonPhrases } from 'http-status-codes';
 import logger from '../helpers/logging';
 import { Admin } from '../models/admin.model';
+import { Video } from '../models/video.model';
 
 const { INTERNAL_SERVER_ERROR, BAD_REQUEST, OK } = status;
 export const registerAdmin = async (req: Request, res: Response) => {
@@ -107,6 +108,42 @@ export const getAuthAdmin = async (req: any, res: Response) => {
       message: ReasonPhrases.OK,
       data: {
         userData,
+      },
+    });
+  } catch (e) {
+    logger.error(e);
+    responseHandler(res, INTERNAL_SERVER_ERROR, {
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      data: {},
+    });
+  }
+};
+
+export const storeVideos = async (req: any, res: Response) => {
+  try {
+    const vid = await Video.create(req.body);
+    return responseHandler(res, OK, {
+      message: ReasonPhrases.OK,
+      data: {
+        video: vid,
+      },
+    });
+  } catch (e) {
+    logger.error(e);
+    responseHandler(res, INTERNAL_SERVER_ERROR, {
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      data: {},
+    });
+  }
+};
+
+export const getVideos = async (req: any, res: Response) => {
+  try {
+    const vid = await Video.find();
+    return responseHandler(res, OK, {
+      message: ReasonPhrases.OK,
+      data: {
+        video: vid,
       },
     });
   } catch (e) {
