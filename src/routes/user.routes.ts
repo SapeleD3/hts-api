@@ -34,7 +34,7 @@ export const USER_ROUTES = {
   ADMIN: '/admin',
   NETWORK: '/network',
   VIDEOS: '/videos',
-  ADMIN_VIDEOS: '/videos',
+  ADMIN_VIDEOS: '/admin/videos',
 };
 
 const userRoutes = Router();
