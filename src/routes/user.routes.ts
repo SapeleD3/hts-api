@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import {
+  deleteVideos,
+  editVideos,
   getAuthAdmin,
   getVideos,
   loginAdmin,
@@ -32,6 +34,7 @@ export const USER_ROUTES = {
   ADMIN: '/admin',
   NETWORK: '/network',
   VIDEOS: '/videos',
+  ADMIN_VIDEOS: '/videos',
 };
 
 const userRoutes = Router();
@@ -46,5 +49,8 @@ userRoutes.get(USER_ROUTES.ADMIN, AdminLoggedIn, getAuthAdmin);
 userRoutes.post(USER_ROUTES.VIDEOS, AdminLoggedIn, storeVideos);
 userRoutes.get(USER_ROUTES.NETWORK, isLoggedIn, getNetworkMembers);
 userRoutes.get(USER_ROUTES.VIDEOS, isLoggedIn, getVideos);
+userRoutes.delete(USER_ROUTES.VIDEOS, AdminLoggedIn, deleteVideos);
+userRoutes.put(USER_ROUTES.VIDEOS, AdminLoggedIn, editVideos);
+userRoutes.get(USER_ROUTES.ADMIN_VIDEOS, AdminLoggedIn, getVideos);
 
 export default userRoutes;

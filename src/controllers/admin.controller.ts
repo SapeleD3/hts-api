@@ -154,3 +154,39 @@ export const getVideos = async (req: any, res: Response) => {
     });
   }
 };
+
+export const editVideos = async (req: any, res: Response) => {
+  const { videoId } = req.params;
+  try {
+    await Video.updateOne({ _id: videoId }, { $set: req.body });
+    return responseHandler(res, OK, {
+      message: ReasonPhrases.OK,
+      data: {
+        video: await Video.findOne({ _id: videoId }),
+      },
+    });
+  } catch (e) {
+    logger.error(e);
+    responseHandler(res, INTERNAL_SERVER_ERROR, {
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      data: {},
+    });
+  }
+};
+
+export const deleteVideos = async (req: any, res: Response) => {
+  const { videoId } = req.params;
+  try {
+    await Video.deleteOne({ _id: videoId });
+    return responseHandler(res, OK, {
+      message: ReasonPhrases.OK,
+      data: {},
+    });
+  } catch (e) {
+    logger.error(e);
+    responseHandler(res, INTERNAL_SERVER_ERROR, {
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      data: {},
+    });
+  }
+};
