@@ -3,6 +3,7 @@ import {
   deleteVideos,
   editVideos,
   getAuthAdmin,
+  getVideo,
   getVideos,
   loginAdmin,
   registerAdmin,
@@ -53,5 +54,6 @@ userRoutes.get(USER_ROUTES.VIDEOS, isLoggedIn, getVideos);
 userRoutes.delete(USER_ROUTES.VIDEO, AdminLoggedIn, deleteVideos);
 userRoutes.put(USER_ROUTES.VIDEO, AdminLoggedIn, editVideos);
 userRoutes.get(USER_ROUTES.ADMIN_VIDEOS, AdminLoggedIn, getVideos);
+userRoutes.get(USER_ROUTES.VIDEO, AdminLoggedIn, getVideo);
 
 export default userRoutes;

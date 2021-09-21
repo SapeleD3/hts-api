@@ -190,3 +190,21 @@ export const deleteVideos = async (req: any, res: Response) => {
     });
   }
 };
+
+export const getVideo = async (req: any, res: Response) => {
+  try {
+    const vid = await Video.findOne({ _id: req.params.videoId });
+    return responseHandler(res, OK, {
+      message: ReasonPhrases.OK,
+      data: {
+        video: vid,
+      },
+    });
+  } catch (e) {
+    logger.error(e);
+    responseHandler(res, INTERNAL_SERVER_ERROR, {
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+      data: {},
+    });
+  }
+};
